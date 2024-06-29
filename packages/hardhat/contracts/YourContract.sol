@@ -13,6 +13,17 @@ import "hardhat/console.sol";
  * @author BuidlGuidl
  */
 contract YourContract {
+
+	address public yoannAddress;
+
+	function setYoannAddress(address _yoannAddress) public {
+		yoannAddress = _yoannAddress;
+	}
+
+	function getYoannAddress() public view returns (address) {
+		return yoannAddress;
+	}
+	
 	// State Variables
 	address public immutable owner;
 	string public greeting = "Building Unstoppable Apps!!!";

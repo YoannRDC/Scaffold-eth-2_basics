@@ -1,13 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { Address, AddressInput } from "~~/components/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
+  // connected wallet
   const { address: connectedAddress } = useAccount();
+
+  // READ 'yoannAddress' from contract
+  const { data: yoannAddressValueFromContract } = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "yoannAddress",
+  });
+
+  // DISPLAY 'yoannAddress' on the website. Link contract to Front.
+  const [yoannAddressValue, setYoannAddressValue] = useState<string>(yoannAddressValueFromContract || "");
+
+  // INPUT for new 'yoannAddress'
+  const handleYoannAddressChange = (newValue: string) => {
+    setYoannAddressValue(newValue);
+  };
+
+  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
 
   return (
     <>
@@ -20,6 +39,39 @@ const Home: NextPage = () => {
           <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
             <p className="my-2 font-medium">Connected Address:</p>
             <Address address={connectedAddress} />
+          </div>
+          <div className="flex jsustify-center items-center space-x-2 flex-col sm:flex-row">
+            <p className="my-2 font-medium">Yoann Address from contract:</p>
+            <Address address={yoannAddressValueFromContract} />
+          </div>
+
+          {/* Set Yoann Address */}
+          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0">
+            <div className="flex justify-center items-center space-x-2">
+              <p className="my-2 font-medium">Yoann Address:</p>
+              <AddressInput
+                onChange={handleYoannAddressChange}
+                value={yoannAddressValue}
+                placeholder="Set Yoann Address"
+              />
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await writeYourContractAsync({
+                      functionName: "setYoannAddress",
+                      args: [yoannAddressValue],
+                    });
+                  } catch (e) {
+                    console.error("Error setting new Yoann Address:", e);
+                  }
+                }}
+              >
+                Set address
+              </button>
+            </div>
           </div>
           <p className="text-center text-lg">
             Get started by editing{" "}
