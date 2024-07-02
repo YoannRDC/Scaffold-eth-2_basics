@@ -36,6 +36,9 @@ Launch the website:
 -> useScaffoldReadContract
 -> useScaffoldWriteContract
 -> useScaffoldWatchContractEvent
+-> useScaffoldEventHistory (block number and status missing)
+
+
 
 // *********
 // Debug

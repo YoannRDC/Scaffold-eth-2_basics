@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { MutateOptions } from "@tanstack/react-query";
 import {
   Abi,
@@ -297,6 +298,7 @@ export type UseScaffoldEventHistoryData<
   | IsContractDeclarationMissing<
       any[],
       {
+        transactionHash: ReactNode;
         log: Log<bigint, number, false, TEvent, false, [TEvent], TEventName>;
         args: AbiParametersToPrimitiveTypes<TEvent["inputs"]> &
           GetEventArgs<

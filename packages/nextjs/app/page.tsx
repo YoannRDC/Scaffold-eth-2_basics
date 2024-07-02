@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address, AddressInput } from "~~/components/scaffold-eth";
 import {
+  useScaffoldEventHistory,
   useScaffoldReadContract,
   useScaffoldWatchContractEvent,
   useScaffoldWriteContract,
@@ -60,6 +61,22 @@ const Home: NextPage = () => {
     },
   });
 
+  // READ history events from contract
+  // filters: { greetingSetter: "0x9eB2C4866aAe575bC88d00DE5061d5063a1bb3aF" },
+  const {
+    data: historyEvents,
+    isLoading: isLoadingEvents,
+    error: errorReadingEvents,
+  } = useScaffoldEventHistory({
+    contractName: "YourContract",
+    eventName: "UserAddressUpdated",
+    fromBlock: 31231n,
+    watch: true,
+    blockData: true,
+    transactionData: true,
+    receiptData: true,
+  });
+
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
 
   return (
@@ -74,12 +91,14 @@ const Home: NextPage = () => {
             <p className="my-2 font-medium">Connected Address:</p>
             <Address address={connectedAddress} />
           </div>
+          <h1 className="mt-8">------------ useScaffoldReadContract ----------------</h1>
           <div className="flex jsustify-center items-center space-x-2 flex-col sm:flex-row">
             <p className="my-2 font-medium">User Address from contract:</p>
             <Address address={userAddressValueFromContract} />
           </div>
 
           {/* Set User Address */}
+          <h1 className="mt-8">------------ useScaffoldWriteContract ----------------</h1>
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0">
             <div className="flex justify-center items-center space-x-2">
               <p className="my-2 font-medium">User Address:</p>
@@ -108,14 +127,32 @@ const Home: NextPage = () => {
             </div>
           </div>
 
+          <h1 className="mt-8">------------ useScaffoldWatchContractEvent ----------------</h1>
           <h1>Events: </h1>
           <ul>
             {userAddressLogs.map((log, index) => (
               <li key={index}>User Address: {log._userAddress}</li>
             ))}
           </ul>
-        </div>
 
+          <h1 className="mt-8">------------ useScaffoldEventHistory ----------------</h1>
+          <h2>Event History</h2>
+          {isLoadingEvents && <p>Loading events...</p>}
+          {errorReadingEvents && <p>Error loading events: {errorReadingEvents.message}</p>}
+          {!isLoadingEvents && !errorReadingEvents && historyEvents && (
+            <ul>
+              {historyEvents.map((historyEvent, index) => (
+                <li key={index}>
+                  <p>
+                    Address: {historyEvent.args._userAddress}, <br /> Transaction Hash: {historyEvent.transactionHash}{" "}
+                  </p>
+                  {/* <p>Block Number: {historyEvent.blockNumber}</p> */}
+                  {/* <p>Receipt Status: {historyEvent.receipt.status}</p> */}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
           <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
             <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
