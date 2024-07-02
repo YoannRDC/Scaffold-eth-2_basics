@@ -23,5 +23,24 @@ Launch the website:
 // Implemented functions from the documentation
 // *********
 
+⚙ Components
+-> <Address>
+-> <Balance>
+-> <AddressInput>
+-> <EtherInput>
+-> <InputBase>
+-> <IntegerInput>
+-> <RainbowKitCustomConnectButton>
+
+🛠 Interacting with Your Smart Contracts
 -> useScaffoldReadContract
 -> useScaffoldWriteContract
+-> useScaffoldWatchContractEvent
+
+// *********
+// Debug
+// *********
+
+-> Error: eth_sendRawTransaction ==> Nonce too high. Expected nonce to be 0 but got 6. Note that transactions can't be queued when automining.
+Onpen Metamask -> 'Parameters' -> 'Advanced parameters' -> 'Erase Activity of the tab'.  Then retry transaction.
+

@@ -14,14 +14,17 @@ import "hardhat/console.sol";
  */
 contract YourContract {
 
-	address public yoannAddress;
+	address public userAddress;
+	event UserAddressUpdated(address _userAddress);
+	
 
-	function setYoannAddress(address _yoannAddress) public {
-		yoannAddress = _yoannAddress;
+	function setUserAddress(address _userAddress) public {
+		userAddress = _userAddress;
+		emit UserAddressUpdated(_userAddress);
 	}
 
-	function getYoannAddress() public view returns (address) {
-		return yoannAddress;
+	function getUserAddress() public view returns (address) {
+		return userAddress;
 	}
 	
 	// State Variables

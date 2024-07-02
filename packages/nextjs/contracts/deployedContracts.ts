@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     YourContract: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       abi: [
         {
           inputs: [
@@ -52,8 +52,21 @@ const deployedContracts = {
           type: "event",
         },
         {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "address",
+              name: "_userAddress",
+              type: "address",
+            },
+          ],
+          name: "UserAddressUpdated",
+          type: "event",
+        },
+        {
           inputs: [],
-          name: "getYoannAddress",
+          name: "getUserAddress",
           outputs: [
             {
               internalType: "address",
@@ -120,11 +133,11 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "address",
-              name: "_yoannAddress",
+              name: "_userAddress",
               type: "address",
             },
           ],
-          name: "setYoannAddress",
+          name: "setUserAddress",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -137,6 +150,19 @@ const deployedContracts = {
               internalType: "uint256",
               name: "",
               type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "userAddress",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
             },
           ],
           stateMutability: "view",
@@ -166,19 +192,6 @@ const deployedContracts = {
           name: "withdraw",
           outputs: [],
           stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "yoannAddress",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
           type: "function",
         },
         {

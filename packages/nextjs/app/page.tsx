@@ -6,25 +6,59 @@ import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address, AddressInput } from "~~/components/scaffold-eth";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import {
+  useScaffoldReadContract,
+  useScaffoldWatchContractEvent,
+  useScaffoldWriteContract,
+} from "~~/hooks/scaffold-eth";
+
+// Définir le type pour les logs d'adresse utilisateur
+interface UserAddressLog {
+  _userAddress: string;
+}
 
 const Home: NextPage = () => {
   // connected wallet
   const { address: connectedAddress } = useAccount();
 
-  // READ 'yoannAddress' from contract
-  const { data: yoannAddressValueFromContract } = useScaffoldReadContract({
+  // READ 'userAddress' from contract
+  const { data: userAddressValueFromContract } = useScaffoldReadContract({
     contractName: "YourContract",
-    functionName: "yoannAddress",
+    functionName: "userAddress",
   });
 
-  // DISPLAY 'yoannAddress' on the website. Link contract to Front.
-  const [yoannAddressValue, setYoannAddressValue] = useState<string>(yoannAddressValueFromContract || "");
+  // DISPLAY 'userAddress' on the website. Link contract to Front.
+  const [userAddressValue, setUserAddressValue] = useState<string>(userAddressValueFromContract || "");
 
-  // INPUT for new 'yoannAddress'
-  const handleYoannAddressChange = (newValue: string) => {
-    setYoannAddressValue(newValue);
+  // INPUT for new 'userAddress'
+  const handleUserAddressChange = (newValue: string) => {
+    setUserAddressValue(newValue);
   };
+
+  // EVENT emitted when 'userAddress' is updated.
+  const [userAddressLogs, setUserAddressLogs] = useState<UserAddressLog[]>([]);
+  useScaffoldWatchContractEvent({
+    contractName: "YourContract",
+    eventName: "UserAddressUpdated",
+    // The onLogs function is called whenever a UserAddressUpdated event is emitted by the contract.
+    // Parameters emitted by the event can be destructed using the below example
+    // for this example: event UserAddressUpdated(address _userAddress);
+    onLogs: logs => {
+      const newLogs = logs.map(log => {
+        const { _userAddress } = log.args;
+        console.log("📡 UserAddressUpdated event", _userAddress);
+        return { _userAddress: _userAddress ?? "" }; // Provide a default empty string if _userAddress is undefined
+      });
+      // Set removes double, otherwise the same address is added every 4 seconds. Only in local blockchain ?
+      setUserAddressLogs(prevLogs => {
+        const combinedLogs = [...prevLogs, ...newLogs];
+        const uniqueLogs = Array.from(new Set(combinedLogs.map(log => log._userAddress))).map(_userAddress => ({
+          _userAddress,
+        }));
+        return uniqueLogs;
+      });
+    },
+  });
 
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
 
@@ -41,18 +75,18 @@ const Home: NextPage = () => {
             <Address address={connectedAddress} />
           </div>
           <div className="flex jsustify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Yoann Address from contract:</p>
-            <Address address={yoannAddressValueFromContract} />
+            <p className="my-2 font-medium">User Address from contract:</p>
+            <Address address={userAddressValueFromContract} />
           </div>
 
-          {/* Set Yoann Address */}
+          {/* Set User Address */}
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0">
             <div className="flex justify-center items-center space-x-2">
-              <p className="my-2 font-medium">Yoann Address:</p>
+              <p className="my-2 font-medium">User Address:</p>
               <AddressInput
-                onChange={handleYoannAddressChange}
-                value={yoannAddressValue}
-                placeholder="Set Yoann Address"
+                onChange={handleUserAddressChange}
+                value={userAddressValue}
+                placeholder="Set User Address"
               />
             </div>
             <div className="flex justify-center items-center space-x-2">
@@ -61,11 +95,11 @@ const Home: NextPage = () => {
                 onClick={async () => {
                   try {
                     await writeYourContractAsync({
-                      functionName: "setYoannAddress",
-                      args: [yoannAddressValue],
+                      functionName: "setUserAddress",
+                      args: [userAddressValue],
                     });
                   } catch (e) {
-                    console.error("Error setting new Yoann Address:", e);
+                    console.error("Error setting new User Address:", e);
                   }
                 }}
               >
@@ -73,22 +107,13 @@ const Home: NextPage = () => {
               </button>
             </div>
           </div>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+
+          <h1>Events: </h1>
+          <ul>
+            {userAddressLogs.map((log, index) => (
+              <li key={index}>User Address: {log._userAddress}</li>
+            ))}
+          </ul>
         </div>
 
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
