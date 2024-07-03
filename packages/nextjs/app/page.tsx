@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address, AddressInput } from "~~/components/scaffold-eth";
 import {
+  useDeployedContractInfo,
   useScaffoldEventHistory,
   useScaffoldReadContract,
   useScaffoldWatchContractEvent,
@@ -35,6 +36,7 @@ const Home: NextPage = () => {
   const handleUserAddressChange = (newValue: string) => {
     setUserAddressValue(newValue);
   };
+  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
 
   // EVENT emitted when 'userAddress' is updated.
   const [userAddressLogs, setUserAddressLogs] = useState<UserAddressLog[]>([]);
@@ -77,7 +79,8 @@ const Home: NextPage = () => {
     receiptData: true,
   });
 
-  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
+  // READ Deployed contract info.
+  const { data: deployedContractData } = useDeployedContractInfo("YourContract");
 
   return (
     <>
@@ -152,7 +155,42 @@ const Home: NextPage = () => {
               ))}
             </ul>
           )}
+
+          <h1 className="mt-8">------------ useDeployedContractInfo ----------------</h1>
+          {deployedContractData ? (
+            <div>
+              <h2>Deployed Contract Information</h2>
+              <p>
+                <strong>Address:</strong> {deployedContractData.address}
+              </p>
+              <h3>ABI</h3>
+              <ul>
+                {deployedContractData.abi.map((entry, index) => (
+                  <li key={index}>
+                    <strong>Type:</strong> {entry.type} <br />
+                    {"inputs" in entry && entry.inputs && (
+                      <div>
+                        <strong>Inputs:</strong>
+                        <ul>
+                          {entry.inputs.map((input, idx) => (
+                            <li key={idx}>
+                              <strong>Name:</strong> {input.name}, <strong>Type:</strong> {input.type},{" "}
+                              <strong>Internal Type:</strong> {input.internalType}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* <strong>State Mutability:</strong> {entry.stateMutability} */}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p>Loading contract data...</p>
+          )}
         </div>
+
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
           <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
             <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
