@@ -38,6 +38,7 @@ Launch the website:
 -> useScaffoldWatchContractEvent
 -> useScaffoldEventHistory (block number and status missing)
 -> useDeployedContractInfo
+-> useScaffoldContract
 
 
 // *********

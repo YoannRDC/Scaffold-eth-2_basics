@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
@@ -8,6 +8,7 @@ import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address, AddressInput } from "~~/components/scaffold-eth";
 import {
   useDeployedContractInfo,
+  useScaffoldContract,
   useScaffoldEventHistory,
   useScaffoldReadContract,
   useScaffoldWatchContractEvent,
@@ -23,6 +24,10 @@ const Home: NextPage = () => {
   // connected wallet
   const { address: connectedAddress } = useAccount();
 
+  /****************
+   * useScaffoldReadContract
+   ****************/
+
   // READ 'userAddress' from contract
   const { data: userAddressValueFromContract } = useScaffoldReadContract({
     contractName: "YourContract",
@@ -32,11 +37,19 @@ const Home: NextPage = () => {
   // DISPLAY 'userAddress' on the website. Link contract to Front.
   const [userAddressValue, setUserAddressValue] = useState<string>(userAddressValueFromContract || "");
 
+  /****************
+   * useScaffoldWriteContract
+   ****************/
+
   // INPUT for new 'userAddress'
   const handleUserAddressChange = (newValue: string) => {
     setUserAddressValue(newValue);
   };
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
+
+  /****************
+   * useScaffoldWatchContractEvent
+   ****************/
 
   // EVENT emitted when 'userAddress' is updated.
   const [userAddressLogs, setUserAddressLogs] = useState<UserAddressLog[]>([]);
@@ -63,6 +76,10 @@ const Home: NextPage = () => {
     },
   });
 
+  /****************
+   * useScaffoldEventHistory
+   ****************/
+
   // READ history events from contract
   // filters: { greetingSetter: "0x9eB2C4866aAe575bC88d00DE5061d5063a1bb3aF" },
   const {
@@ -79,8 +96,28 @@ const Home: NextPage = () => {
     receiptData: true,
   });
 
+  /****************
+   * useDeployedContractInfo
+   ****************/
+
   // READ Deployed contract info.
   const { data: deployedContractData } = useDeployedContractInfo("YourContract");
+
+  // GET contract and read a data (example)
+  const { data: yourContract } = useScaffoldContract({
+    contractName: "YourContract",
+  });
+  const [userAddressFromContract, setUserAddressFromContract] = useState("");
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      if (yourContract) {
+        const address = await yourContract.read.userAddress();
+        setUserAddressFromContract(address);
+      }
+    };
+
+    fetchUserAddress();
+  }, [yourContract]);
 
   return (
     <>
@@ -99,7 +136,6 @@ const Home: NextPage = () => {
             <p className="my-2 font-medium">User Address from contract:</p>
             <Address address={userAddressValueFromContract} />
           </div>
-
           {/* Set User Address */}
           <h1 className="mt-8">------------ useScaffoldWriteContract ----------------</h1>
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0">
@@ -129,7 +165,6 @@ const Home: NextPage = () => {
               </button>
             </div>
           </div>
-
           <h1 className="mt-8">------------ useScaffoldWatchContractEvent ----------------</h1>
           <h1>Events: </h1>
           <ul>
@@ -137,7 +172,6 @@ const Home: NextPage = () => {
               <li key={index}>User Address: {log._userAddress}</li>
             ))}
           </ul>
-
           <h1 className="mt-8">------------ useScaffoldEventHistory ----------------</h1>
           <h2>Event History</h2>
           {isLoadingEvents && <p>Loading events...</p>}
@@ -155,7 +189,6 @@ const Home: NextPage = () => {
               ))}
             </ul>
           )}
-
           <h1 className="mt-8">------------ useDeployedContractInfo ----------------</h1>
           {deployedContractData ? (
             <div>
@@ -189,6 +222,8 @@ const Home: NextPage = () => {
           ) : (
             <p>Loading contract data...</p>
           )}
+          <h1 className="mt-8">------------ useDeployedContractInfo ----------------</h1>
+          <strong>User Address:</strong> {userAddressFromContract}
         </div>
 
         <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
